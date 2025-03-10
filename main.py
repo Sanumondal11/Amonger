@@ -6,7 +6,7 @@ from os import listdir
 from os.path import isfile, join
 
 pg.init()
-
+# this is just a test
 pg.display.set_caption("Amonger")
 
 BG_COLOR = (255,255,255)
