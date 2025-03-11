@@ -64,6 +64,8 @@ class Player(pygame.sprite.Sprite):
         self.animation_count=0
         self.fall_count=0
         self.jump_count=0
+        self.hit=False
+        self.hit_count=0
 
     def jump(self):
         self.y_vel=-self.GRAVITY*10
@@ -75,6 +77,10 @@ class Player(pygame.sprite.Sprite):
     def move(self,dx,dy):
         self.rect.x+=dx
         self.rect.y+=dy
+
+    def make_hit(self):
+        self.hit=True
+        self.hit_count=0
     
     def move_left(self,vel):
         self.x_vel=-vel
@@ -92,8 +98,15 @@ class Player(pygame.sprite.Sprite):
         self.y_vel+=min(3,(self.fall_count/fps)*self.GRAVITY)  # gravity added
         self.move(self.x_vel,self.y_vel)
         
+        if self.hit:
+            self.hit_count+=1
+        if self.hit_count>fps*2:
+            self.hit=False
+            self.hit_count=0
+
         self.fall_count+=1
         self.update_sprite()
+
 
     def landed(self):
         self.fall_count=0
@@ -106,6 +119,8 @@ class Player(pygame.sprite.Sprite):
 
     def update_sprite(self):
         sprite_sheet="idle"
+        if self.hit:
+            sprite_sheet="hit"
         if self.y_vel <0:
             if self.jump_count==1:
                 sprite_sheet="jump"
@@ -243,7 +258,12 @@ def handle_move(player,objects):
     if keys[pygame.K_RIGHT] and not collide_right:
         player.move_right(PLAYER_VEL)
 
-    handle_vertical_collision(player,objects,player.y_vel)
+    vertical_collide=handle_vertical_collision(player,objects,player.y_vel)
+    to_check=[collide_left,collide_right,*vertical_collide]
+    for obj in to_check:
+        if obj and obj.name=="fire":
+            player.make_hit()
+
 
 def main(window):
     clock=pygame.time.Clock()
